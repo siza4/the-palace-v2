@@ -8,5 +8,11 @@
     "start": "next start",
     "server": "node live-server/server.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "framer-motion": "^12.42.2",
+    "gsap": "^3.15.0",
+    "howler": "^2.2.4",
+    "qrcode": "^1.5.4",
+    "react-icons": "^5.7.0"
+  }
 }
