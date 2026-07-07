@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --palace-black: #08050d;
+  --palace-purple: #14051f;
+  --royal-gold: #FEA000;
+  --royal-white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, #32104d 0%, var(--palace-black) 70%);
+  color: var(--royal-white);
+}

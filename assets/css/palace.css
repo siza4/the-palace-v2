@@ -1,0 +1,136 @@
+:root {
+    --royal-purple:#14051f;
+    --gold:#FEA000;
+    --white:#ffffff;
+    --soft:#c9c0d8;
+}
+
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+
+body{
+
+    min-height:100vh;
+
+    background:
+    radial-gradient(circle at top,
+    #32104d,
+    var(--royal-purple));
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-family:
+    "Times New Roman",
+    serif;
+
+    color:var(--white);
+
+}
+
+
+.palace-container{
+
+    width:90%;
+    max-width:450px;
+
+    text-align:center;
+
+    padding:40px 25px;
+
+}
+
+
+.emblem{
+
+    font-size:70px;
+
+    color:var(--gold);
+
+    margin-bottom:20px;
+
+}
+
+
+h1{
+
+    letter-spacing:12px;
+
+    font-size:35px;
+
+    color:white;
+
+}
+
+
+.subtitle{
+
+    margin-top:20px;
+
+    color:var(--soft);
+
+    font-size:17px;
+
+    line-height:1.6;
+
+}
+
+
+.divider{
+
+    width:80px;
+
+    height:2px;
+
+    background:var(--gold);
+
+    margin:30px auto;
+
+}
+
+
+.description{
+
+    color:#ddd;
+
+    line-height:1.8;
+
+    font-size:15px;
+
+}
+
+
+.royal-button{
+
+    display:inline-block;
+
+    margin-top:35px;
+
+    padding:15px 35px;
+
+    border:1px solid var(--gold);
+
+    color:var(--gold);
+
+    text-decoration:none;
+
+    letter-spacing:3px;
+
+    transition:.3s;
+
+}
+
+
+.royal-button:hover{
+
+    background:var(--gold);
+
+    color:#14051f;
+
+}
