@@ -2,8 +2,16 @@
 
 
 import { useEffect, useState } from "react";
+
 import { supabase } from "../../../lib/supabase/client";
-import { loadRoyalAnnouncements } from "../../../lib/engine/announcement";
+
+import {
+    loadRoyalAnnouncements
+} from "../../../lib/engine/announcement";
+
+import {
+    loadMemberChambers
+} from "../../../lib/engine/chamber";
 
 
 
@@ -11,7 +19,11 @@ export default function ThronePage({ params }) {
 
 
     const [member, setMember] = useState(null);
+
     const [announcements, setAnnouncements] = useState([]);
+
+    const [chambers, setChambers] = useState([]);
+
     const [loading, setLoading] = useState(true);
 
 
@@ -23,9 +35,6 @@ export default function ThronePage({ params }) {
 
 
             const { id } = await params;
-
-
-            console.log("THRONE MEMBER ID:", id);
 
 
 
@@ -48,24 +57,52 @@ export default function ThronePage({ params }) {
 
 
             console.log(
-                "MEMBER RESULT:",
+                "THRONE MEMBER:",
                 memberResult
             );
 
 
 
-            if(memberResult.data){
+            if(memberResult.error || !memberResult.data){
 
-                setMember(memberResult.data);
+                setLoading(false);
 
-
-                const notices =
-                await loadRoyalAnnouncements();
-
-
-                setAnnouncements(notices);
+                return;
 
             }
+
+
+
+            const currentMember =
+            memberResult.data;
+
+
+
+            setMember(currentMember);
+
+
+
+
+
+            const notices =
+            await loadRoyalAnnouncements();
+
+
+            setAnnouncements(notices);
+
+
+
+
+
+            const availableChambers =
+            await loadMemberChambers(
+                currentMember.id
+            );
+
+
+            setChambers(
+                availableChambers
+            );
 
 
 
@@ -79,7 +116,9 @@ export default function ThronePage({ params }) {
         loadPalace();
 
 
+
     }, [params]);
+
 
 
 
@@ -96,7 +135,6 @@ export default function ThronePage({ params }) {
             items-center
             justify-center
             text-[#D4AF37]
-            text-xl
             ">
 
             Entering The Palace...
@@ -152,13 +190,13 @@ export default function ThronePage({ params }) {
         ">
 
 
+
         <div className="
         bg-[#5B0A18]
         border
         border-[#D4AF37]
         rounded-3xl
         p-8
-        shadow-2xl
         ">
 
 
@@ -173,7 +211,6 @@ export default function ThronePage({ params }) {
         👑 THE PALACE
 
         </h1>
-
 
 
         <p className="
@@ -205,10 +242,7 @@ export default function ThronePage({ params }) {
         </p>
 
 
-        <h2 className="
-        text-2xl
-        mt-2
-        ">
+        <h2 className="text-2xl mt-2">
 
         {member.full_name}
 
@@ -220,53 +254,44 @@ export default function ThronePage({ params }) {
         <div className="mt-6 space-y-4">
 
 
-        <div>
-
-        <p className="text-gray-400">
-        Royal Identity
-        </p>
-
-        <p className="text-[#D4AF37]">
+        <p>
+        <span className="text-gray-400">
+        Royal Identity:
+        </span>
+        <br/>
         {member.royal_id}
         </p>
 
-        </div>
 
-
-
-
-        <div>
-
-        <p className="text-gray-400">
-        Royal Office
-        </p>
 
         <p>
+        <span className="text-gray-400">
+        Royal Office:
+        </span>
+        <br/>
         👑 {member.royal_office}
         </p>
 
-        </div>
 
 
 
-
-        <div>
-
-        <p className="text-gray-400">
-        Membership Status
-        </p>
-
-        <p className="text-green-400">
+        <p>
+        <span className="text-gray-400">
+        Status:
+        </span>
+        <br/>
+        <span className="text-green-400">
         ● {member.membership_status}
+        </span>
         </p>
 
-        </div>
 
 
         </div>
 
 
         </div>
+
 
 
 
@@ -282,7 +307,6 @@ export default function ThronePage({ params }) {
         ">
 
 
-
         <h2 className="
         text-[#D4AF37]
         text-xl
@@ -296,10 +320,8 @@ export default function ThronePage({ params }) {
 
 
 
-
         {
         announcements.map((item)=>(
-
 
             <div
             key={item.id}
@@ -311,24 +333,14 @@ export default function ThronePage({ params }) {
             "
             >
 
-
             <h3 className="font-bold">
-
             {item.title}
-
             </h3>
 
 
-
-            <p className="
-            text-gray-300
-            mt-2
-            ">
-
+            <p className="text-gray-300 mt-2">
             {item.message}
-
             </p>
-
 
 
             <p className="
@@ -337,18 +349,16 @@ export default function ThronePage({ params }) {
             mt-3
             ">
 
-            Issued by: {item.issued_by}
+            Issued by:
+            {item.issued_by}
 
             </p>
 
 
-
             </div>
-
 
         ))
         }
-
 
 
         </div>
@@ -357,43 +367,77 @@ export default function ThronePage({ params }) {
 
 
 
+
+
         <div className="
-        mt-6
-        space-y-3
-        ">
-
-
-
-        <button className="
-        w-full
+        mt-8
         bg-black
         border
         border-[#D4AF37]
-        rounded-xl
-        p-4
-        text-left
+        rounded-2xl
+        p-5
+        ">
+
+
+        <h2 className="
+        text-[#D4AF37]
+        text-xl
+        font-bold
+        mb-5
         ">
 
         🏛 Royal Chambers
 
-        </button>
+        </h2>
 
 
 
+        {
+        chambers.map((item)=>(
 
-        <button className="
-        w-full
-        bg-black
-        border
-        border-[#D4AF37]
-        rounded-xl
-        p-4
-        text-left
-        ">
 
-        🎖 Royal Identity
+            <div
+            key={item.id}
+            className="
+            border
+            border-gray-700
+            rounded-xl
+            p-4
+            mb-3
+            "
+            >
 
-        </button>
+
+            <h3 className="font-bold">
+
+            {item.chambers.name}
+
+            </h3>
+
+
+            <p className="text-gray-300 mt-2">
+
+            {item.chambers.description}
+
+            </p>
+
+
+            <p className="
+            text-[#D4AF37]
+            mt-3
+            ">
+
+            Access:
+            {item.access_level}
+
+            </p>
+
+
+            </div>
+
+
+        ))
+        }
 
 
 

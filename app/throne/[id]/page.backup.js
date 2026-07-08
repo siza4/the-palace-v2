@@ -1,34 +1,35 @@
 "use client";
 
-import {
-    loadRoyalAnnouncements
-} from "../../../lib/engine/announcement";
+
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase/client";
+import { loadRoyalAnnouncements } from "../../../lib/engine/announcement";
+
 
 
 export default function ThronePage({ params }) {
 
 
     const [member, setMember] = useState(null);
+    const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
-const [announcements,setAnnouncements] = useState([]);
+
 
 
     useEffect(() => {
 
 
-        async function loadMember(){
+        async function loadPalace(){
 
-const notices =
-await loadRoyalAnnouncements();
 
-setAnnouncements(notices);
             const { id } = await params;
 
 
+            console.log("THRONE MEMBER ID:", id);
 
-            const result = await supabase
+
+
+            const memberResult = await supabase
 
             .from("members")
 
@@ -46,15 +47,26 @@ setAnnouncements(notices);
 
 
 
-            console.log("ROYAL THRONE:", result);
+            console.log(
+                "MEMBER RESULT:",
+                memberResult
+            );
 
 
 
-            if(result.data){
+            if(memberResult.data){
 
-                setMember(result.data);
+                setMember(memberResult.data);
+
+
+                const notices =
+                await loadRoyalAnnouncements();
+
+
+                setAnnouncements(notices);
 
             }
+
 
 
             setLoading(false);
@@ -64,7 +76,7 @@ setAnnouncements(notices);
 
 
 
-        loadMember();
+        loadPalace();
 
 
     }, [params]);
@@ -84,6 +96,7 @@ setAnnouncements(notices);
             items-center
             justify-center
             text-[#D4AF37]
+            text-xl
             ">
 
             Entering The Palace...
@@ -133,12 +146,10 @@ setAnnouncements(notices);
         ">
 
 
-
         <section className="
         max-w-xl
         mx-auto
         ">
-
 
 
         <div className="
@@ -189,7 +200,6 @@ setAnnouncements(notices);
         ">
 
 
-
         <p className="text-gray-400">
         Welcome Back
         </p>
@@ -206,10 +216,12 @@ setAnnouncements(notices);
 
 
 
+
         <div className="mt-6 space-y-4">
 
 
         <div>
+
         <p className="text-gray-400">
         Royal Identity
         </p>
@@ -217,12 +229,14 @@ setAnnouncements(notices);
         <p className="text-[#D4AF37]">
         {member.royal_id}
         </p>
+
         </div>
 
 
 
 
         <div>
+
         <p className="text-gray-400">
         Royal Office
         </p>
@@ -230,32 +244,116 @@ setAnnouncements(notices);
         <p>
         👑 {member.royal_office}
         </p>
-        </div>
 
+        </div>
 
 
 
 
         <div>
+
         <p className="text-gray-400">
         Membership Status
         </p>
 
-        <p className="
-        text-green-400
+        <p className="text-green-400">
+        ● {member.membership_status}
+        </p>
+
+        </div>
+
+
+        </div>
+
+
+        </div>
+
+
+
+
+
+        <div className="
+        mt-8
+        bg-black
+        border
+        border-[#D4AF37]
+        rounded-2xl
+        p-5
         ">
 
-        ● {member.membership_status}
 
-        </p>
+
+        <h2 className="
+        text-[#D4AF37]
+        text-xl
+        font-bold
+        mb-5
+        ">
+
+        📜 Royal Announcements
+
+        </h2>
+
+
+
+
+        {
+        announcements.map((item)=>(
+
+
+            <div
+            key={item.id}
+            className="
+            border-b
+            border-gray-700
+            pb-4
+            mb-4
+            "
+            >
+
+
+            <h3 className="font-bold">
+
+            {item.title}
+
+            </h3>
+
+
+
+            <p className="
+            text-gray-300
+            mt-2
+            ">
+
+            {item.message}
+
+            </p>
+
+
+
+            <p className="
+            text-sm
+            text-[#D4AF37]
+            mt-3
+            ">
+
+            Issued by: {item.issued_by}
+
+            </p>
+
+
+
+            </div>
+
+
+        ))
+        }
+
+
+
         </div>
 
 
-
-        </div>
-
-
-        </div>
 
 
 
@@ -263,21 +361,6 @@ setAnnouncements(notices);
         mt-6
         space-y-3
         ">
-
-
-        <button className="
-        w-full
-        bg-black
-        border
-        border-[#D4AF37]
-        rounded-xl
-        p-4
-        text-left
-        ">
-
-        📜 Royal Announcements
-
-        </button>
 
 
 
@@ -311,6 +394,7 @@ setAnnouncements(notices);
         🎖 Royal Identity
 
         </button>
+
 
 
         </div>
