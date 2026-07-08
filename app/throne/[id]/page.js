@@ -10,54 +10,38 @@ export default function ThronePage({ params }) {
 
     const [member, setMember] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [memberId, setMemberId] = useState(null);
 
 
 
     useEffect(() => {
-
-
-        async function loadParams(){
-
-            const resolvedParams = await params;
-
-            setMemberId(resolvedParams.id);
-
-        }
-
-
-        loadParams();
-
-
-    }, [params]);
-
-
-
-
-
-    useEffect(() => {
-
-
-        if(!memberId) return;
-
 
 
         async function loadMember(){
 
 
+            const { id } = await params;
+
+
+
             const result = await supabase
 
-                .from("members")
+            .from("members")
 
-                .select("*")
+            .select(`
+                id,
+                full_name,
+                royal_id,
+                royal_office,
+                membership_status
+            `)
 
-                .eq("id", memberId)
+            .eq("id", id)
 
-                .single();
+            .single();
 
 
 
-            console.log("THRONE MEMBER RESULT:", result);
+            console.log("ROYAL THRONE:", result);
 
 
 
@@ -78,8 +62,7 @@ export default function ThronePage({ params }) {
         loadMember();
 
 
-    }, [memberId]);
-
+    }, [params]);
 
 
 
@@ -98,7 +81,7 @@ export default function ThronePage({ params }) {
             text-[#D4AF37]
             ">
 
-                Loading Royal Identity...
+            Entering The Palace...
 
             </main>
 
@@ -123,9 +106,7 @@ export default function ThronePage({ params }) {
             text-white
             ">
 
-                <h1>
-                    Royal Identity Not Found
-                </h1>
+            Royal Identity Not Found
 
             </main>
 
@@ -142,78 +123,204 @@ export default function ThronePage({ params }) {
         <main className="
         min-h-screen
         bg-[#070707]
-        p-6
         text-white
+        p-6
         ">
 
 
-            <section className="
-            max-w-xl
-            mx-auto
-            bg-[#5B0A18]
-            border
-            border-[#D4AF37]
-            rounded-2xl
-            p-8
-            ">
 
-
-                <h1 className="
-                text-3xl
-                text-[#D4AF37]
-                font-bold
-                text-center
-                ">
-
-                    THE ROYAL THRONE
-
-                </h1>
+        <section className="
+        max-w-xl
+        mx-auto
+        ">
 
 
 
-                <div className="
-                mt-8
-                bg-black
-                rounded-xl
-                p-5
-                border
-                border-[#D4AF37]
-                ">
+        <div className="
+        bg-[#5B0A18]
+        border
+        border-[#D4AF37]
+        rounded-3xl
+        p-8
+        shadow-2xl
+        ">
 
 
-                    <h2 className="
-                    text-[#D4AF37]
-                    text-xl
-                    ">
 
-                    Royal Identity
+        <h1 className="
+        text-center
+        text-3xl
+        text-[#D4AF37]
+        font-bold
+        ">
 
-                    </h2>
+        👑 THE PALACE
 
-
-                    <p className="mt-3">
-                    Name: {member.full_name}
-                    </p>
+        </h1>
 
 
-                    <p>
-                    Royal ID: {member.royal_id}
-                    </p>
+
+        <p className="
+        text-center
+        text-gray-300
+        mt-2
+        ">
+
+        Royal Throne
+
+        </p>
 
 
-                    <p>
-                    Status: {member.status}
-                    </p>
 
 
-                </div>
+
+        <div className="
+        mt-8
+        bg-black
+        rounded-2xl
+        p-6
+        border
+        border-[#D4AF37]
+        ">
 
 
-            </section>
+
+        <p className="text-gray-400">
+        Welcome Back
+        </p>
+
+
+        <h2 className="
+        text-2xl
+        mt-2
+        ">
+
+        {member.full_name}
+
+        </h2>
+
+
+
+        <div className="mt-6 space-y-4">
+
+
+        <div>
+        <p className="text-gray-400">
+        Royal Identity
+        </p>
+
+        <p className="text-[#D4AF37]">
+        {member.royal_id}
+        </p>
+        </div>
+
+
+
+
+        <div>
+        <p className="text-gray-400">
+        Royal Office
+        </p>
+
+        <p>
+        👑 {member.royal_office}
+        </p>
+        </div>
+
+
+
+
+
+        <div>
+        <p className="text-gray-400">
+        Membership Status
+        </p>
+
+        <p className="
+        text-green-400
+        ">
+
+        ● {member.membership_status}
+
+        </p>
+        </div>
+
+
+
+        </div>
+
+
+        </div>
+
+
+
+        <div className="
+        mt-6
+        space-y-3
+        ">
+
+
+        <button className="
+        w-full
+        bg-black
+        border
+        border-[#D4AF37]
+        rounded-xl
+        p-4
+        text-left
+        ">
+
+        📜 Royal Announcements
+
+        </button>
+
+
+
+        <button className="
+        w-full
+        bg-black
+        border
+        border-[#D4AF37]
+        rounded-xl
+        p-4
+        text-left
+        ">
+
+        🏛 Royal Chambers
+
+        </button>
+
+
+
+
+        <button className="
+        w-full
+        bg-black
+        border
+        border-[#D4AF37]
+        rounded-xl
+        p-4
+        text-left
+        ">
+
+        🎖 Royal Identity
+
+        </button>
+
+
+        </div>
+
+
+
+        </div>
+
+
+        </section>
 
 
         </main>
 
     );
+
 
 }
