@@ -8,6 +8,11 @@ export default async function ChamberPage({ params }) {
 
 
 
+    const memberId =
+    "751d06ef-643d-4438-8f50-4f9a51f6e0e0";
+
+
+
     const chamberResult = await supabase
 
     .from("chambers")
@@ -20,7 +25,10 @@ export default async function ChamberPage({ params }) {
 
 
 
+
+
     if(chamberResult.error || !chamberResult.data){
+
 
         return (
 
@@ -43,8 +51,84 @@ export default async function ChamberPage({ params }) {
 
 
 
+
     const chamber =
     chamberResult.data;
+
+
+
+
+
+
+
+    const accessResult = await supabase
+
+    .from("member_chambers")
+
+    .select("*")
+
+    .eq("member_id", memberId)
+
+    .eq("chamber_id", id)
+
+    .single();
+
+
+
+
+
+
+
+    if(accessResult.error || !accessResult.data){
+
+
+        return (
+
+            <main className="
+            min-h-screen
+            bg-black
+            text-white
+            flex
+            items-center
+            justify-center
+            ">
+
+
+            <div className="
+            text-center
+            ">
+
+            <h1 className="
+            text-3xl
+            text-red-500
+            font-bold
+            ">
+
+            Access Denied
+
+            </h1>
+
+
+            <p className="mt-4">
+
+            You do not have permission to enter this Chamber.
+
+            </p>
+
+
+            </div>
+
+
+            </main>
+
+        );
+
+
+    }
+
+
+
+
 
 
 
@@ -57,13 +141,20 @@ export default async function ChamberPage({ params }) {
     .eq("chamber_id", id)
 
     .order("created_at", {
+
         ascending:false
+
     });
+
 
 
 
     const posts =
     postsResult.data || [];
+
+
+
+
 
 
 
@@ -77,6 +168,7 @@ export default async function ChamberPage({ params }) {
         ">
 
 
+
         <section className="
         max-w-xl
         mx-auto
@@ -88,6 +180,9 @@ export default async function ChamberPage({ params }) {
         ">
 
 
+
+
+
         <h1 className="
         text-3xl
         text-[#D4AF37]
@@ -97,6 +192,8 @@ export default async function ChamberPage({ params }) {
         🏛 {chamber.name}
 
         </h1>
+
+
 
 
 
@@ -112,14 +209,32 @@ export default async function ChamberPage({ params }) {
 
 
 
+
+
+        <p className="
+        mt-5
+        text-[#D4AF37]
+        ">
+
+        Access Level:
+
+        {accessResult.data.access_level}
+
+        </p>
+
+
+
+
+
+
+
         <div className="
         mt-8
         bg-black
-        border
-        border-[#D4AF37]
         rounded-2xl
         p-5
         ">
+
 
 
         <h2 className="
@@ -136,6 +251,8 @@ export default async function ChamberPage({ params }) {
 
 
 
+
+
         {
         posts.map((post)=>(
 
@@ -147,8 +264,7 @@ export default async function ChamberPage({ params }) {
             border-gray-700
             pb-5
             mb-5
-            "
-            >
+            ">
 
 
             <h3 className="font-bold">
@@ -195,11 +311,14 @@ export default async function ChamberPage({ params }) {
 
 
 
+
+
         </section>
 
 
         </main>
 
     );
+
 
 }
