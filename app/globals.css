@@ -1,24 +1,29 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 :root {
-  --palace-black: #08050d;
-  --palace-purple: #14051f;
-  --royal-gold: #FEA000;
-  --royal-white: #ffffff;
+
+  --royal-maroon: #5B0A18;
+  --palace-gold: #D4AF37;
+  --royal-silver: #C0C0C0;
+  --obsidian: #070707;
+
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  min-height: 100%;
-}
 
 body {
-  margin: 0;
+
   background:
-    radial-gradient(circle at top, #32104d 0%, var(--palace-black) 70%);
-  color: var(--royal-white);
+  radial-gradient(
+    circle at top,
+    #7a1025,
+    #070707 55%
+  );
+
+  color:white;
+
+  min-height:100vh;
+
 }

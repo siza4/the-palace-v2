@@ -1,121 +1,57 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../../lib/supabase/client";
-import { generateRoyalId } from "../../lib/palace";
+import { requestAdmission } from "../../lib/engine/admission";
 
-export default function Identity() {
+
+export default function IdentityPage() {
 
   const [form, setForm] = useState({
+
     full_name: "",
     email: "",
     phone: "",
     country: ""
+
   });
+
 
   const [message, setMessage] = useState("");
 
 
-  function updateField(e) {
+
+  function handleChange(e){
 
     setForm({
+
       ...form,
+
       [e.target.name]: e.target.value
+
     });
 
   }
 
 
 
-  async function registerMember() {
+  async function handleSubmit(e){
 
-    setMessage("Creating Royal Identity...");
-
-
-    if (
-      !form.full_name ||
-      !form.email ||
-      !form.phone ||
-      !form.country
-    ) {
-
-      setMessage("Complete all fields.");
-
-      return;
-
-    }
+    e.preventDefault();
 
 
-    const royalId = generateRoyalId();
+    setMessage("Processing Royal Admission...");
 
 
 
-    const {
-      data: member,
-      error: memberError
-
-    } = await supabase
-
-      .from("members")
-
-      .insert({
-
-        royal_id: royalId,
-
-        full_name: form.full_name,
-
-        email: form.email,
-
-        phone: form.phone,
-
-        country: form.country,
-
-        membership_level: "Citizen",
-
-        status: "Pending"
-
-      })
-
-      .select()
-
-      .single();
+    const result = await requestAdmission(form);
 
 
 
-    if(memberError){
+    if(!result.success){
 
-      setMessage(memberError.message);
-
-      return;
-
-    }
-
-
-
-    const {
-      error: passError
-
-    } = await supabase
-
-      .from("royal_passes")
-
-      .insert({
-
-        member_id: member.id,
-
-        qr_data: royalId,
-
-        barcode_data: royalId,
-
-        active:true
-
-      });
-
-
-
-    if(passError){
-
-      setMessage(passError.message);
+      setMessage(
+        result.error?.message || "Admission failed"
+      );
 
       return;
 
@@ -124,7 +60,7 @@ export default function Identity() {
 
 
     window.location.href =
-    `/identity/${member.id}`;
+    `/identity/${result.member.id}`;
 
 
   }
@@ -133,73 +69,154 @@ export default function Identity() {
 
   return (
 
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="
+      min-h-screen 
+      flex 
+      items-center 
+      justify-center 
+      bg-[#070707]
+      p-6
+    ">
 
 
-      <div className="max-w-md w-full bg-white/5 border border-yellow-500/30 rounded-3xl p-8">
+      <form
+      onSubmit={handleSubmit}
+      className="
+      w-full
+      max-w-md
+      rounded-2xl
+      p-8
+      bg-[#5B0A18]
+      border
+      border-[#D4AF37]
+      space-y-5
+      "
+      >
 
 
-        <h1 className="text-3xl text-center mb-8">
-          Royal Admission
+        <h1 className="
+        text-3xl
+        text-center
+        text-[#D4AF37]
+        ">
+          THE PALACE
         </h1>
 
 
-        {
-          Object.keys(form).map((field)=>(
+        <p className="
+        text-center
+        text-[#C0C0C0]
+        ">
+          Royal Admission
+        </p>
 
-            <input
 
-              key={field}
 
-              name={field}
+        <input
+        name="full_name"
+        placeholder="Full Name"
+        value={form.full_name}
+        onChange={handleChange}
+        required
+        className="
+        w-full
+        p-3
+        rounded
+        bg-black
+        text-white
+        border
+        border-[#D4AF37]/50
+        "
+        />
 
-              placeholder={field.replace("_"," ").toUpperCase()}
 
-              onChange={updateField}
 
-              className="
-              w-full
-              mb-4
-              p-3
-              rounded
-              bg-black/30
-              border
-              border-white/10
-              "
+        <input
+        name="email"
+        placeholder="Email"
+        type="email"
+        value={form.email}
+        onChange={handleChange}
+        required
+        className="
+        w-full
+        p-3
+        rounded
+        bg-black
+        text-white
+        border
+        border-[#D4AF37]/50
+        "
+        />
 
-            />
 
-          ))
-        }
+
+        <input
+        name="phone"
+        placeholder="Phone"
+        value={form.phone}
+        onChange={handleChange}
+        required
+        className="
+        w-full
+        p-3
+        rounded
+        bg-black
+        text-white
+        border
+        border-[#D4AF37]/50
+        "
+        />
+
+
+
+        <input
+        name="country"
+        placeholder="Country"
+        value={form.country}
+        onChange={handleChange}
+        required
+        className="
+        w-full
+        p-3
+        rounded
+        bg-black
+        text-white
+        border
+        border-[#D4AF37]/50
+        "
+        />
+
 
 
         <button
-
-          onClick={registerMember}
-
-          className="
-          w-full
-          py-3
-          border
-          border-yellow-500
-          text-yellow-400
-          "
-
+        type="submit"
+        className="
+        w-full
+        py-3
+        rounded
+        bg-[#D4AF37]
+        text-black
+        font-bold
+        "
         >
 
-          REQUEST ADMISSION
+          Request Admission
 
         </button>
 
 
-        <p className="mt-6 text-center text-yellow-300">
 
+        <p className="
+        text-center
+        text-[#C0C0C0]
+        text-sm
+        ">
           {message}
-
         </p>
 
 
-      </div>
+      </form>
 
 
     </main>

@@ -1,67 +1,179 @@
 "use client";
 
+
 import { useState } from "react";
-import PalaceLogo from "../../components/ui/PalaceLogo";
-import GlassCard from "../../components/ui/GlassCard";
-import RoyalButton from "../../components/ui/RoyalButton";
+import { enterPalace } from "../../lib/engine/entry";
 
-export default function EnterPage() {
 
-  const [royalId, setRoyalId] = useState("");
-  const [password, setPassword] = useState("");
 
-  return (
+export default function EnterPage(){
 
-    <main className="min-h-screen flex items-center justify-center px-6">
 
-      <GlassCard>
+    const [identifier,setIdentifier] = useState("");
 
-        <PalaceLogo size="small" />
+    const [message,setMessage] = useState("");
 
-        <div className="mt-10">
+    const [loading,setLoading] = useState(false);
 
-          <input
-            type="text"
-            placeholder="Royal ID"
-            value={royalId}
-            onChange={(e)=>setRoyalId(e.target.value)}
-            className="w-full p-4 rounded-xl mb-4 bg-black/30 border border-yellow-500/30 text-white outline-none"
-          />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="w-full p-4 rounded-xl bg-black/30 border border-yellow-500/30 text-white outline-none"
-          />
 
-          <div className="text-center">
+    async function handleEnter(){
 
-            <RoyalButton>
-              ENTER THE PALACE
-            </RoyalButton>
 
-          </div>
+        setLoading(true);
 
-          <div className="mt-8 text-center">
+        setMessage("Verifying Royal Identity...");
 
-            <p className="text-gray-400">
-              First visit?
-            </p>
 
-            <button className="mt-3 text-yellow-400">
-              Request Royal Admission
-            </button>
 
-          </div>
+        const result =
+        await enterPalace(identifier);
 
-        </div>
 
-      </GlassCard>
 
-    </main>
+        if(!result.success){
 
-  );
+
+            setMessage(result.message);
+
+            setLoading(false);
+
+            return;
+
+        }
+
+
+
+        setMessage("Access Granted");
+
+
+
+        window.location.href =
+        `/throne/${result.member.id}`;
+
+
+    }
+
+
+
+
+    return (
+
+        <main className="
+        min-h-screen
+        bg-[#070707]
+        flex
+        items-center
+        justify-center
+        p-6
+        ">
+
+
+            <section className="
+            w-full
+            max-w-md
+            bg-[#5B0A18]
+            border
+            border-[#D4AF37]
+            rounded-2xl
+            p-8
+            shadow-xl
+            ">
+
+
+                <h1 className="
+                text-3xl
+                text-center
+                text-[#D4AF37]
+                font-bold
+                mb-3
+                ">
+
+                    THE PALACE
+
+                </h1>
+
+
+
+                <p className="
+                text-center
+                text-[#C0C0C0]
+                mb-8
+                ">
+
+                    Private Royal Entrance
+
+                </p>
+
+
+
+
+                <input
+
+                value={identifier}
+
+                onChange={(e)=>setIdentifier(e.target.value)}
+
+                placeholder="Enter Royal ID"
+
+                className="
+                w-full
+                bg-black
+                text-white
+                border
+                border-[#D4AF37]
+                rounded
+                p-3
+                "
+
+                />
+
+
+
+
+                <button
+
+                onClick={handleEnter}
+
+                disabled={loading}
+
+                className="
+                w-full
+                mt-5
+                bg-[#D4AF37]
+                text-black
+                font-bold
+                py-3
+                rounded
+                "
+
+                >
+
+                    {loading 
+                    ? "VERIFYING..."
+                    : "ENTER PALACE"}
+
+                </button>
+
+
+
+
+                <p className="
+                text-center
+                text-[#C0C0C0]
+                mt-5
+                ">
+
+                    {message}
+
+                </p>
+
+
+            </section>
+
+
+        </main>
+
+    );
 
 }
