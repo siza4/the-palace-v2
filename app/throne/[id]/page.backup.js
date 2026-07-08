@@ -1,35 +1,34 @@
 "use client";
 
-
+import {
+    loadRoyalAnnouncements
+} from "../../../lib/engine/announcement";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase/client";
-import { loadRoyalAnnouncements } from "../../../lib/engine/announcement";
-
 
 
 export default function ThronePage({ params }) {
 
 
     const [member, setMember] = useState(null);
-    const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
-
+const [announcements,setAnnouncements] = useState([]);
 
 
     useEffect(() => {
 
 
-        async function loadPalace(){
+        async function loadMember(){
 
+const notices =
+await loadRoyalAnnouncements();
 
+setAnnouncements(notices);
             const { id } = await params;
 
 
-            console.log("THRONE MEMBER ID:", id);
 
-
-
-            const memberResult = await supabase
+            const result = await supabase
 
             .from("members")
 
@@ -47,26 +46,15 @@ export default function ThronePage({ params }) {
 
 
 
-            console.log(
-                "MEMBER RESULT:",
-                memberResult
-            );
+            console.log("ROYAL THRONE:", result);
 
 
 
-            if(memberResult.data){
+            if(result.data){
 
-                setMember(memberResult.data);
-
-
-                const notices =
-                await loadRoyalAnnouncements();
-
-
-                setAnnouncements(notices);
+                setMember(result.data);
 
             }
-
 
 
             setLoading(false);
@@ -76,7 +64,7 @@ export default function ThronePage({ params }) {
 
 
 
-        loadPalace();
+        loadMember();
 
 
     }, [params]);
@@ -96,7 +84,6 @@ export default function ThronePage({ params }) {
             items-center
             justify-center
             text-[#D4AF37]
-            text-xl
             ">
 
             Entering The Palace...
@@ -146,10 +133,12 @@ export default function ThronePage({ params }) {
         ">
 
 
+
         <section className="
         max-w-xl
         mx-auto
         ">
+
 
 
         <div className="
@@ -200,6 +189,7 @@ export default function ThronePage({ params }) {
         ">
 
 
+
         <p className="text-gray-400">
         Welcome Back
         </p>
@@ -216,12 +206,10 @@ export default function ThronePage({ params }) {
 
 
 
-
         <div className="mt-6 space-y-4">
 
 
         <div>
-
         <p className="text-gray-400">
         Royal Identity
         </p>
@@ -229,14 +217,12 @@ export default function ThronePage({ params }) {
         <p className="text-[#D4AF37]">
         {member.royal_id}
         </p>
-
         </div>
 
 
 
 
         <div>
-
         <p className="text-gray-400">
         Royal Office
         </p>
@@ -244,116 +230,32 @@ export default function ThronePage({ params }) {
         <p>
         👑 {member.royal_office}
         </p>
-
         </div>
+
 
 
 
 
         <div>
-
         <p className="text-gray-400">
         Membership Status
         </p>
 
-        <p className="text-green-400">
+        <p className="
+        text-green-400
+        ">
+
         ● {member.membership_status}
+
         </p>
-
         </div>
-
-
-        </div>
-
-
-        </div>
-
-
-
-
-
-        <div className="
-        mt-8
-        bg-black
-        border
-        border-[#D4AF37]
-        rounded-2xl
-        p-5
-        ">
-
-
-
-        <h2 className="
-        text-[#D4AF37]
-        text-xl
-        font-bold
-        mb-5
-        ">
-
-        📜 Royal Announcements
-
-        </h2>
-
-
-
-
-        {
-        announcements.map((item)=>(
-
-
-            <div
-            key={item.id}
-            className="
-            border-b
-            border-gray-700
-            pb-4
-            mb-4
-            "
-            >
-
-
-            <h3 className="font-bold">
-
-            {item.title}
-
-            </h3>
-
-
-
-            <p className="
-            text-gray-300
-            mt-2
-            ">
-
-            {item.message}
-
-            </p>
-
-
-
-            <p className="
-            text-sm
-            text-[#D4AF37]
-            mt-3
-            ">
-
-            Issued by: {item.issued_by}
-
-            </p>
-
-
-
-            </div>
-
-
-        ))
-        }
 
 
 
         </div>
 
 
+        </div>
 
 
 
@@ -361,6 +263,21 @@ export default function ThronePage({ params }) {
         mt-6
         space-y-3
         ">
+
+
+        <button className="
+        w-full
+        bg-black
+        border
+        border-[#D4AF37]
+        rounded-xl
+        p-4
+        text-left
+        ">
+
+        📜 Royal Announcements
+
+        </button>
 
 
 
@@ -394,7 +311,6 @@ export default function ThronePage({ params }) {
         🎖 Royal Identity
 
         </button>
-
 
 
         </div>
