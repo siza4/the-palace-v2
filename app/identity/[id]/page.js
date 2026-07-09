@@ -23,6 +23,14 @@ export default async function IdentityPage({ params }) {
     console.log("SUPABASE ERROR:", error);
   }
 
+  // Standing is a separate axis from Office/membership_status — fetched
+  // independently, never collapsed into the members row (Golden Membership Rule).
+  const { data: standing } = await supabase
+    .from("member_standing")
+    .select("status, standing_levels(name)")
+    .eq("member_id", id)
+    .single();
+
   if (!member) {
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -37,7 +45,7 @@ export default async function IdentityPage({ params }) {
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <div>
-        <MemberCard member={member} />
+        <MemberCard member={member} standing={standing} />
 
         <div className="mt-8">
           <QRPass data={member.royal_id} />

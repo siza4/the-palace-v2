@@ -1,4 +1,4 @@
-export default function MemberCard({ member }) {
+export default function MemberCard({ member, standing }) {
   return (
     <div className="relative w-full max-w-sm mx-auto">
       <div
@@ -26,9 +26,17 @@ export default function MemberCard({ member }) {
           </p>
         </div>
 
-        <div className="mt-8 border-t border-yellow-500/30 pt-6">
-          <p className="text-gray-400 text-sm">ROYAL OFFICE</p>
-          <h2 className="text-xl mt-2">{member.royal_office || "Observer"}</h2>
+        <div className="mt-8 border-t border-yellow-500/30 pt-6 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-gray-400 text-sm">STANDING</p>
+            <h2 className="text-lg mt-2">
+              {standing?.standing_levels?.name || "Member Standing"}
+            </h2>
+          </div>
+          <div>
+            <p className="text-gray-400 text-sm">ROYAL OFFICE</p>
+            <h2 className="text-lg mt-2">{member.royal_office || "Observer"}</h2>
+          </div>
         </div>
 
         <div className="mt-6">
