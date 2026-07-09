@@ -136,6 +136,12 @@ export default function ButlerDashboard() {
               Manage Permissions
             </a>
             <a
+              href="/butler/governance"
+              className="bg-[#3a0809] hover:bg-[#4a0a0a] border border-[#D4AF37] text-[#D4AF37] font-bold py-3 px-4 rounded text-center transition"
+            >
+              Governance
+            </a>
+            <a
               href="/butler/payments"
               className="bg-[#3a0809] hover:bg-[#4a0a0a] border border-[#D4AF37] text-[#D4AF37] font-bold py-3 px-4 rounded text-center transition"
             >
