@@ -2,17 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../../lib/supabase/client";
 
 export default function ApprovalQueuePage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [processing, setProcessing] = useState(null);
+  const [session, setSession] = useState(undefined); // undefined = checking, null = none
   const router = useRouter();
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.push("/login");
+        return;
+      }
+      setSession(data.session);
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (session) fetchRequests();
+  }, [session]);
+
+  async function authHeaders() {
+    const { data } = await supabase.auth.getSession();
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${data.session?.access_token}`
+    };
+  }
 
   async function fetchRequests() {
     try {
@@ -28,21 +48,19 @@ export default function ApprovalQueuePage() {
     }
   }
 
-  async function handleApprove(requestId, memberId) {
+  async function handleApprove(requestId) {
     setProcessing(requestId);
     try {
       const res = await fetch(`/api/approval/requests/${requestId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          decidedBy: localStorage.getItem("memberId"),
-          decisionNotes: "Approved by admin"
-        })
+        headers: await authHeaders(),
+        body: JSON.stringify({ decisionNotes: "Approved by Office holder" })
       });
 
-      if (!res.ok) throw new Error("Failed to approve");
-      
-      setRequests(requests.filter(r => r.id !== requestId));
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Failed to approve");
+
+      setRequests(requests.filter((r) => r.id !== requestId));
     } catch (err) {
       alert("Error approving request: " + err.message);
     } finally {
@@ -55,16 +73,14 @@ export default function ApprovalQueuePage() {
     try {
       const res = await fetch(`/api/approval/requests/${requestId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          decidedBy: localStorage.getItem("memberId"),
-          decisionNotes: "Rejected by admin"
-        })
+        headers: await authHeaders(),
+        body: JSON.stringify({ decisionNotes: "Rejected by Office holder" })
       });
 
-      if (!res.ok) throw new Error("Failed to reject");
-      
-      setRequests(requests.filter(r => r.id !== requestId));
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Failed to reject");
+
+      setRequests(requests.filter((r) => r.id !== requestId));
     } catch (err) {
       alert("Error rejecting request: " + err.message);
     } finally {
@@ -72,72 +88,58 @@ export default function ApprovalQueuePage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-[#D4AF37]">Loading...</div>;
+  if (session === undefined || loading) {
+    return <div className="p-6 text-[#D4AF37]">Verifying access...</div>;
+  }
 
   return (
     <main className="min-h-screen bg-[#070707] p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl text-[#D4AF37] font-bold mb-6">Membership Approvals</h1>
+        <h1 className="text-3xl text-[#D4AF37] font-bold mb-6">
+          Membership Approvals
+        </h1>
 
-        {error && <div className="text-red-500 mb-4 p-3 bg-red-900 rounded">{error}</div>}
+        {error && <p className="text-red-400 mb-4">{error}</p>}
 
-        {requests.length === 0 ? (
-          <div className="bg-[#5B0A18] border border-[#D4AF37] p-6 rounded text-center text-[#C0C0C0]">
-            No pending approval requests
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {requests.map((req) => (
-              <div
-                key={req.id}
-                className="bg-[#5B0A18] border border-[#D4AF37] rounded p-6"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-xl text-[#D4AF37] font-bold">
-                      {req.member?.name || 'Unknown Member'}
-                    </h2>
-                    <p className="text-[#C0C0C0]">{req.member?.email}</p>
-                    <p className="text-[#888888] text-sm mt-2">
-                      Requested: {new Date(req.requested_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg text-[#D4AF37] font-bold">
-                      {req.plan?.name}
-                    </p>
-                    <p className="text-[#C0C0C0] text-sm">
-                      Level {req.plan?.access_level}
-                    </p>
-                  </div>
-                </div>
-
-                {req.reason && (
-                  <p className="text-[#C0C0C0] mb-4 bg-[#3a0809] p-3 rounded">
-                    Reason: {req.reason}
-                  </p>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleApprove(req.id, req.member_id)}
-                    disabled={processing === req.id}
-                    className="flex-1 bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {processing === req.id ? "PROCESSING..." : "APPROVE"}
-                  </button>
-                  <button
-                    onClick={() => handleReject(req.id)}
-                    disabled={processing === req.id}
-                    className="flex-1 bg-red-600 text-white font-bold py-2 rounded hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {processing === req.id ? "PROCESSING..." : "REJECT"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        {requests.length === 0 && (
+          <p className="text-gray-400">No pending requests.</p>
         )}
+
+        {requests.map((r) => (
+          <div
+            key={r.id}
+            className="bg-[#5B0A18] border border-[#D4AF37]/40 rounded-lg p-6 mb-4"
+          >
+            <p className="text-white font-semibold">
+              {r.member?.name || r.member_id}
+            </p>
+            <p className="text-gray-400 text-sm mb-2">
+              Requesting: {r.plan?.name}
+            </p>
+            {r.reason && (
+              <p className="text-gray-300 text-sm mb-4 italic">
+                "{r.reason}"
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                disabled={processing === r.id}
+                onClick={() => handleApprove(r.id)}
+                className="bg-[#D4AF37] text-black px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
+              >
+                Approve
+              </button>
+              <button
+                disabled={processing === r.id}
+                onClick={() => handleReject(r.id)}
+                className="bg-transparent border border-red-400 text-red-400 px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </main>
   );

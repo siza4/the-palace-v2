@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import { verifySession } from '@/lib/auth/verifySession';
+import { hasPermission } from '@/lib/auth/permissions';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -6,24 +8,39 @@ const supabase = createClient(
 );
 
 /**
- * Get all approval requests
+ * Get all approval requests. Contains member emails/names — requires
+ * approve_membership permission. Previously public with zero auth.
  */
 export async function GET(request) {
   try {
+    const { member: actingMember, error: authError } = await verifySession(request);
+
+    if (authError || !actingMember) {
+      return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
+    }
+
+    const allowed = await hasPermission(actingMember.id, 'approve_membership');
+    if (!allowed) {
+      return Response.json(
+        { error: 'You do not hold the approve_membership permission' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'pending';
 
-    let query = supabase
+    const { data: requests, error } = await supabase
       .from('approval_requests')
-      .select(`
+      .select(
+        `
         *,
         member:member_id (id, name, email),
         plan:plan_id (name, description, access_level)
-      `)
+      `
+      )
       .eq('status', status)
       .order('requested_at', { ascending: false });
-
-    const { data: requests, error } = await query;
 
     if (error) throw error;
 
@@ -38,7 +55,10 @@ export async function GET(request) {
 }
 
 /**
- * Create approval request
+ * Create approval request. Left open — any member requesting an upgrade
+ * for themselves is expected/normal, not a privileged action. The member
+ * being requested-for is still tied to memberId in the body since this is
+ * a self-initiated application, not a decision.
  */
 export async function POST(request) {
   try {
@@ -66,10 +86,7 @@ export async function POST(request) {
 
     if (error) throw error;
 
-    return Response.json(
-      { approvalRequest },
-      { status: 201 }
-    );
+    return Response.json({ approvalRequest }, { status: 201 });
   } catch (error) {
     console.error('Error creating approval request:', error);
     return Response.json(

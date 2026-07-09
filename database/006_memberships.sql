@@ -1,0 +1,6 @@
+-- Migration 006: Memberships (SUPERSEDED)
+-- Original file was empty. No code in the repo references a "memberships"
+-- table directly — the concept was fully rebuilt in migrations 017-021
+-- (membership_plans, subscriptions, and the access_level/membership_status
+-- columns added to members). This migration is kept as a placeholder for
+-- historical numbering only. No table is created here.

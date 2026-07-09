@@ -1,0 +1,5 @@
+-- Migration 007: Permissions (SUPERSEDED)
+-- Original file was empty. The permissions system was fully built in
+-- migration 019_permissions.sql (permissions + role_permissions tables).
+-- This migration is kept as a placeholder for historical numbering only.
+-- No table is created here.

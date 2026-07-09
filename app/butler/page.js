@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabase/client";
 
 export default function ButlerDashboard() {
   const [stats, setStats] = useState({
@@ -9,18 +11,41 @@ export default function ButlerDashboard() {
     totalRevenue: 0
   });
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(undefined);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.push("/login");
+        return;
+      }
+      setSession(data.session);
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (session) fetchStats();
+  }, [session]);
 
   async function fetchStats() {
     try {
-      // Fetch pending approvals
-      const appRes = await fetch("/api/approval/requests?status=pending");
-      const appData = await appRes.json();
+      const { data } = await supabase.auth.getSession();
+      const appRes = await fetch("/api/approval/requests?status=pending", {
+        headers: { Authorization: `Bearer ${data.session?.access_token}` }
+      });
 
-      setStats(prev => ({
+      if (appRes.status === 403 || appRes.status === 401) {
+        // Authenticated but not an Office holder with this permission.
+        // Don't error the whole dashboard — just show zero and let them
+        // know via the card itself.
+        setStats((prev) => ({ ...prev, pendingApprovals: null }));
+        setLoading(false);
+        return;
+      }
+
+      const appData = await appRes.json();
+      setStats((prev) => ({
         ...prev,
         pendingApprovals: appData.requests?.length || 0
       }));
@@ -31,17 +56,26 @@ export default function ButlerDashboard() {
     }
   }
 
+  if (session === undefined) {
+    return <div className="p-6 text-[#D4AF37]">Verifying access...</div>;
+  }
+
   return (
     <main className="min-h-screen bg-[#070707] p-6">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl text-[#D4AF37] font-bold mb-8">The Butler's Office</h1>
+        <h1 className="text-4xl text-[#D4AF37] font-bold mb-8">
+          The Butler's Office
+        </h1>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {/* Pending Approvals Card */}
           <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
             <h2 className="text-[#C0C0C0] text-sm mb-2">PENDING APPROVALS</h2>
             <div className="text-4xl text-[#D4AF37] font-bold">
-              {loading ? "..." : stats.pendingApprovals}
+              {loading
+                ? "..."
+                : stats.pendingApprovals === null
+                ? "—"
+                : stats.pendingApprovals}
             </div>
             <a
               href="/butler/approvals"
@@ -51,7 +85,6 @@ export default function ButlerDashboard() {
             </a>
           </div>
 
-          {/* Active Members Card */}
           <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
             <h2 className="text-[#C0C0C0] text-sm mb-2">ACTIVE MEMBERS</h2>
             <div className="text-4xl text-[#D4AF37] font-bold">
@@ -65,7 +98,6 @@ export default function ButlerDashboard() {
             </a>
           </div>
 
-          {/* Revenue Card */}
           <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
             <h2 className="text-[#C0C0C0] text-sm mb-2">TOTAL REVENUE</h2>
             <div className="text-4xl text-[#D4AF37] font-bold">
@@ -80,9 +112,10 @@ export default function ButlerDashboard() {
           </div>
         </div>
 
-        {/* Admin Menu */}
         <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
-          <h2 className="text-2xl text-[#D4AF37] font-bold mb-6">Administration</h2>
+          <h2 className="text-2xl text-[#D4AF37] font-bold mb-6">
+            Administration
+          </h2>
           <div className="grid md:grid-cols-2 gap-4">
             <a
               href="/butler/members"
