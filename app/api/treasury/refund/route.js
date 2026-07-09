@@ -1,4 +1,4 @@
-import { refundPayment } from '@/lib/engine/treasury';
+import { refundContribution } from '@/lib/engine/treasury';
 import { verifySession } from '@/lib/auth/verifySession';
 import { hasPermission } from '@/lib/auth/permissions';
 
@@ -19,14 +19,14 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { subscriptionId, reason } = body;
+    const { contributionId, reason } = body;
 
-    if (!subscriptionId) {
-      return Response.json({ error: 'subscriptionId is required' }, { status: 400 });
+    if (!contributionId) {
+      return Response.json({ error: 'contributionId is required' }, { status: 400 });
     }
 
-    const subscription = await refundPayment(subscriptionId, actingMember.id, reason);
-    return Response.json({ subscription }, { status: 200 });
+    const contribution = await refundContribution(contributionId, actingMember.id, reason);
+    return Response.json({ contribution }, { status: 200 });
   } catch (error) {
     console.error('Error processing refund:', error);
     return Response.json(

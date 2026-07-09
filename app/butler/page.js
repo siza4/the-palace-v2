@@ -31,7 +31,7 @@ export default function ButlerDashboard() {
   async function fetchStats() {
     try {
       const { data } = await supabase.auth.getSession();
-      const appRes = await fetch("/api/approval/requests?status=pending", {
+      const appRes = await fetch("/api/standing/advance?all=true&status=pending", {
         headers: { Authorization: `Bearer ${data.session?.access_token}` }
       });
 
@@ -69,7 +69,7 @@ export default function ButlerDashboard() {
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
-            <h2 className="text-[#C0C0C0] text-sm mb-2">PENDING APPROVALS</h2>
+            <h2 className="text-[#C0C0C0] text-sm mb-2">STANDING REQUESTS</h2>
             <div className="text-4xl text-[#D4AF37] font-bold">
               {loading
                 ? "..."
@@ -78,7 +78,7 @@ export default function ButlerDashboard() {
                 : stats.pendingApprovals}
             </div>
             <a
-              href="/butler/approvals"
+              href="/butler/standing"
               className="text-[#D4AF37] text-sm hover:underline mt-4 inline-block"
             >
               Review Queue →
@@ -124,10 +124,10 @@ export default function ButlerDashboard() {
               Member Management
             </a>
             <a
-              href="/butler/approvals"
+              href="/butler/standing"
               className="bg-[#3a0809] hover:bg-[#4a0a0a] border border-[#D4AF37] text-[#D4AF37] font-bold py-3 px-4 rounded text-center transition"
             >
-              Approval Queue
+              Standing Requests
             </a>
             <a
               href="/butler/permissions"

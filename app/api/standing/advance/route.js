@@ -1,5 +1,6 @@
-import { requestStandingAdvancement, getCurrentStanding } from '@/lib/engine/standing';
+import { requestStandingAdvancement, getCurrentStanding, listAdvancementRequests } from '@/lib/engine/standing';
 import { verifySession } from '@/lib/auth/verifySession';
+import { hasPermission } from '@/lib/auth/permissions';
 
 /**
  * A member requests advancement to Circle/Council/Authority Standing.
@@ -38,7 +39,9 @@ export async function POST(request) {
 }
 
 /**
- * Get the caller's own current Standing.
+ * GET /api/standing/advance -> the caller's own current Standing.
+ * GET /api/standing/advance?all=true&status=pending -> the full review
+ * queue, requires manage_standing (used by the Butler's Office UI).
  */
 export async function GET(request) {
   try {
@@ -46,6 +49,21 @@ export async function GET(request) {
 
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+
+    if (searchParams.get('all') === 'true') {
+      const allowed = await hasPermission(member.id, 'manage_standing');
+      if (!allowed) {
+        return Response.json(
+          { error: 'You do not hold the manage_standing permission' },
+          { status: 403 }
+        );
+      }
+
+      const requests = await listAdvancementRequests(searchParams.get('status') || 'pending');
+      return Response.json({ requests }, { status: 200 });
     }
 
     const standing = await getCurrentStanding(member.id);

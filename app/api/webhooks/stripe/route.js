@@ -1,21 +1,18 @@
 import Stripe from 'stripe';
-import { recordPayment, recordPaymentFailure } from '@/lib/engine/treasury';
+import { confirmContribution, recordContributionFailure } from '@/lib/engine/treasury';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 /**
- * Stripe webhook endpoint. This is the ONLY route that can ever mark a
- * subscription as paid — and it only does so after verifying the request
- * was genuinely signed by Stripe using STRIPE_WEBHOOK_SECRET.
+ * Stripe webhook endpoint. This is the ONLY route that can ever confirm a
+ * Royal Standing contribution — it only does so after verifying the
+ * request was genuinely signed by Stripe using STRIPE_WEBHOOK_SECRET.
  *
- * Replaces the previous /api/payment/confirm route, which accepted
- * subscriptionId/paymentId/amountPaid as plain, unverified POST body
- * fields — meaning anyone could activate any subscription (including a
- * Palace Authority tier plan) for free by posting a fabricated payment id.
- * That is the literal, concrete version of the Charter's named anti-pattern:
- * "Payment -> Authority Granted" (21.14).
+ * Updated for the Charter 10.3 contribution model (migration 027) — no
+ * longer processes plan/subscription payments, only standing_contribution
+ * type PaymentIntents created by treasury.initiateContribution().
  */
 export async function POST(request) {
   if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
@@ -44,19 +41,23 @@ export async function POST(request) {
     switch (event.type) {
       case 'payment_intent.succeeded': {
         const intent = event.data.object;
-        const { subscriptionId } = await resolveSubscription(intent);
-        if (subscriptionId) {
-          await recordPayment(subscriptionId, intent.id, intent.amount_received);
+        if (intent.metadata?.type !== 'standing_contribution') break;
+
+        const contributionId = intent.metadata?.contributionId;
+        if (contributionId) {
+          await confirmContribution(contributionId, intent.id, intent.amount_received / 100);
         }
         break;
       }
 
       case 'payment_intent.payment_failed': {
         const intent = event.data.object;
-        const { subscriptionId } = await resolveSubscription(intent);
-        if (subscriptionId) {
-          await recordPaymentFailure(
-            subscriptionId,
+        if (intent.metadata?.type !== 'standing_contribution') break;
+
+        const contributionId = intent.metadata?.contributionId;
+        if (contributionId) {
+          await recordContributionFailure(
+            contributionId,
             intent.last_payment_error?.message || 'Payment failed'
           );
         }
@@ -64,7 +65,6 @@ export async function POST(request) {
       }
 
       default:
-        // Unhandled event types are fine to ignore.
         break;
     }
 
@@ -73,33 +73,4 @@ export async function POST(request) {
     console.error('Error processing Stripe webhook:', error);
     return Response.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
-}
-
-/**
- * A PaymentIntent doesn't carry a subscriptionId natively — we need to
- * look up the pending subscription that matches the memberId/planId
- * metadata set when the intent was created in createPaymentIntent().
- */
-async function resolveSubscription(paymentIntent) {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-
-  const memberId = paymentIntent.metadata?.memberId;
-  const planId = paymentIntent.metadata?.planId;
-
-  if (!memberId || !planId) return { subscriptionId: null };
-
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('id')
-    .eq('member_id', memberId)
-    .eq('plan_id', planId)
-    .in('status', ['pending', 'pending_approval'])
-    .order('created_at', { ascending: false })
-    .maybeSingle();
-
-  return { subscriptionId: data?.id || null };
 }
