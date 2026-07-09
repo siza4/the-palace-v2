@@ -9,22 +9,29 @@
 --
 -- This migration is NOT auto-applied to any account. Replace the
 -- placeholder email below with the founder's real member email before
--- running it in the Supabase SQL editor. Run it exactly once.
+-- running it in the Supabase SQL editor. Run it exactly onc
+
+
+
 
 DO $$
 DECLARE
-    founder_email text := 'REPLACE_WITH_FOUNDER_EMAIL@example.com';
+    founder_email text := 'akachrizzney@gmail.com';
     founder_id uuid;
     authority_role_id uuid;
     authority_standing_id uuid;
     authority_office_id uuid;
 BEGIN
-    SELECT id INTO founder_id FROM public.members WHERE email = founder_email;
+    SELECT id INTO founder_id
+    FROM public.members
+    WHERE email = founder_email;
 
     IF founder_id IS NULL THEN
         RAISE EXCEPTION 'No member found with email %. Edit this migration with the real founder email before running.', founder_email;
     END IF;
 
+    -- ...the remainder of your existing migration stays exactly as it is...
+END $$;
     -- Permission-bearing role (approve_membership, manage_standing, manage_offices, etc.)
     SELECT id INTO authority_role_id FROM public.royal_roles WHERE name = 'Palace Authority';
     INSERT INTO public.member_roles (member_id, role_id)
