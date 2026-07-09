@@ -1,24 +1,27 @@
-import { createClient } from '@supabase/supabase-js';
-import { createPaymentIntent, recordPayment } from '@/lib/engine/treasury';
+import { createPaymentIntent } from '@/lib/engine/treasury';
+import { verifySession } from '@/lib/auth/verifySession';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
+/**
+ * Start a checkout for a plan. memberId is taken from the verified
+ * session, never from the request body — a member can only ever create
+ * a payment intent for themselves.
+ */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { memberId, planId } = body;
+    const { member, error: authError } = await verifySession(request);
 
-    if (!memberId || !planId) {
-      return Response.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (authError || !member) {
+      return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
     }
 
-    const paymentIntent = await createPaymentIntent(memberId, planId);
+    const body = await request.json();
+    const { planId } = body;
+
+    if (!planId) {
+      return Response.json({ error: 'planId is required' }, { status: 400 });
+    }
+
+    const paymentIntent = await createPaymentIntent(member.id, planId);
     return Response.json(paymentIntent, { status: 200 });
   } catch (error) {
     console.error('Error creating payment intent:', error);

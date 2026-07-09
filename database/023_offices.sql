@@ -91,3 +91,16 @@ DROP TRIGGER IF EXISTS trg_sync_royal_office_cache ON public.member_offices;
 CREATE TRIGGER trg_sync_royal_office_cache
 AFTER INSERT OR UPDATE OR DELETE ON public.member_offices
 FOR EACH ROW EXECUTE FUNCTION public.sync_royal_office_cache();
+
+-- manage_treasury permission, added alongside Offices since Treasury
+-- Office (Chapter 6) is the Office this permission conceptually belongs
+-- to. Granted to Palace Authority by default only — refunds are
+-- financial-integrity-sensitive.
+INSERT INTO public.permissions (name, description, category)
+VALUES ('manage_treasury', 'Issue refunds and manage Treasury operations', 'admin')
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO public.role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM public.royal_roles r, public.permissions p
+WHERE r.name = 'Palace Authority' AND p.name = 'manage_treasury'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
