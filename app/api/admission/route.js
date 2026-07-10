@@ -3,7 +3,8 @@ import { requestAdmission } from '@/lib/engine/admission';
 /**
  * Royal Admission Office — public entry point.
  * Charter Vol II, Ch3: any visitor may request admission; the engine
- * creates the Member as Standing "Pending" with membership_level "Citizen".
+ * creates the Member with status "Applicant"; Standing is granted
+ * separately by grantInitialStanding() (Charter §12.4).
  * This route performs no privilege elevation — see lib/engine/admission.js
  * for the Standing grant, which never exceeds the Charter-defined baseline.
  */
