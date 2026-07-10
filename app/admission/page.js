@@ -8,6 +8,7 @@ export default function AdmissionPage() {
     email: "",
     phone: "",
     country: "",
+    notes: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +37,7 @@ export default function AdmissionPage() {
         return;
       }
 
-      setResult(data.member);
+      setResult(data.request);
       setLoading(false);
     } catch (err) {
       setError("Connection error. Please try again.");
@@ -52,13 +53,11 @@ export default function AdmissionPage() {
             Admission Requested
           </h1>
           <p className="text-[#C0C0C0] mb-6">
-            Your Royal Identity has been created and is pending review.
-          </p>
-          <p className="text-[#D4AF37] font-mono text-lg mb-2">
-            {result.royal_id}
+            Your Admission Request has been received. The Butler's Office
+            will review it before any Royal Identity is issued.
           </p>
           <p className="text-[#888888] text-sm">
-            Standing: {result.status}
+            Status: {result.status?.replace("_", " ")}
           </p>
           <a
             href="/enter"
@@ -110,6 +109,14 @@ export default function AdmissionPage() {
             onChange={(e) => updateField("country", e.target.value)}
             placeholder="Country"
             className="w-full bg-black text-white border border-[#D4AF37] rounded p-3"
+            disabled={loading}
+          />
+          <textarea
+            value={form.notes}
+            onChange={(e) => updateField("notes", e.target.value)}
+            placeholder="Tell us why you'd like to join The Palace (optional)"
+            rows={3}
+            className="w-full bg-black text-white border border-[#D4AF37] rounded p-3 resize-none"
             disabled={loading}
           />
         </div>

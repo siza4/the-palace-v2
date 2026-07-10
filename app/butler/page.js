@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase/client";
 export default function ButlerDashboard() {
   const [stats, setStats] = useState({
     pendingApprovals: 0,
+    admissionRequests: 0,
     activeMembers: 0,
     totalRevenue: 0
   });
@@ -49,6 +50,17 @@ export default function ButlerDashboard() {
         ...prev,
         pendingApprovals: appData.requests?.length || 0
       }));
+
+      const admissionRes = await fetch("/api/admission?status=submitted", {
+        headers: { Authorization: `Bearer ${data.session?.access_token}` }
+      });
+      if (admissionRes.ok) {
+        const admissionData = await admissionRes.json();
+        setStats((prev) => ({
+          ...prev,
+          admissionRequests: admissionData.requests?.length || 0
+        }));
+      }
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {
@@ -67,7 +79,20 @@ export default function ButlerDashboard() {
           The Butler's Office
         </h1>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
+            <h2 className="text-[#C0C0C0] text-sm mb-2">ADMISSION REQUESTS</h2>
+            <div className="text-4xl text-[#D4AF37] font-bold">
+              {loading ? "..." : stats.admissionRequests}
+            </div>
+            <a
+              href="/butler/admissions"
+              className="text-[#D4AF37] text-sm hover:underline mt-4 inline-block"
+            >
+              Review Queue →
+            </a>
+          </div>
+
           <div className="bg-[#5B0A18] border border-[#D4AF37] rounded-lg p-6">
             <h2 className="text-[#C0C0C0] text-sm mb-2">STANDING REQUESTS</h2>
             <div className="text-4xl text-[#D4AF37] font-bold">
@@ -117,6 +142,12 @@ export default function ButlerDashboard() {
             Administration
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
+            <a
+              href="/butler/admissions"
+              className="bg-[#3a0809] hover:bg-[#4a0a0a] border border-[#D4AF37] text-[#D4AF37] font-bold py-3 px-4 rounded text-center transition"
+            >
+              Admissions
+            </a>
             <a
               href="/butler/members"
               className="bg-[#3a0809] hover:bg-[#4a0a0a] border border-[#D4AF37] text-[#D4AF37] font-bold py-3 px-4 rounded text-center transition"
