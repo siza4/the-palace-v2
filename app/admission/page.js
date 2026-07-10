@@ -31,12 +31,12 @@ export default function AdmissionPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setError(data.message || "Admission request failed.");
+        setError(data.error || "Admission request failed.");
         setLoading(false);
         return;
       }
 
-      setResult(data.member);
+      setResult(data.request);
       setLoading(false);
     } catch (err) {
       setError("Connection error. Please try again.");
@@ -52,13 +52,13 @@ export default function AdmissionPage() {
             Admission Requested
           </h1>
           <p className="text-[#C0C0C0] mb-6">
-            Your Royal Identity has been created and is pending review.
-          </p>
-          <p className="text-[#D4AF37] font-mono text-lg mb-2">
-            {result.royal_id}
+            Your request has been submitted for review. The Admissions Office
+            reviews new requests, and Palace Authority makes the final
+            decision. Nothing is created yet — you'll be notified once a
+            decision is made.
           </p>
           <p className="text-[#888888] text-sm">
-            Standing: {result.status}
+            Status: {result.status}
           </p>
           <a
             href="/enter"

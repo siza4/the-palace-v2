@@ -1,48 +1,25 @@
-import { requestAdmission } from '@/lib/engine/admission';
+import { createAdmissionRequest } from '@/lib/engine/admission';
 
 /**
- * Royal Admission Office — public entry point.
- * Charter Vol II, Ch3: any visitor may request admission; the engine
- * creates the Member as Standing "Pending" with membership_level "Citizen".
- * This route performs no privilege elevation — see lib/engine/admission.js
- * for the Standing grant, which never exceeds the Charter-defined baseline.
+ * Applicant submits an admission request. Creates ONLY an
+ * admission_requests row — no member, no pass, no Standing. Those are
+ * created by decideAdmissionRequest() once Authority approves (see
+ * app/api/butler/admission-requests/[id]/decide/route.js).
  */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { full_name, email, phone, country } = body;
-
-    if (!full_name || !email) {
-      return Response.json(
-        { success: false, message: 'Full name and email are required' },
-        { status: 400 }
-      );
-    }
-
-    const result = await requestAdmission({ full_name, email, phone, country });
+    const form = await request.json();
+    const result = await createAdmissionRequest(form);
 
     if (!result.success) {
-      return Response.json(
-        { success: false, message: result.error?.message || 'Admission request failed' },
-        { status: 400 }
-      );
+      return Response.json({ success: false, error: result.error }, { status: 400 });
     }
 
+    return Response.json({ success: true, request: result.request }, { status: 201 });
+  } catch (err) {
+    console.error('Admission submission error:', err);
     return Response.json(
-      {
-        success: true,
-        member: {
-          id: result.member.id,
-          royal_id: result.member.royal_id,
-          status: result.member.status,
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Error processing admission request:', error);
-    return Response.json(
-      { success: false, message: 'Failed to process admission request' },
+      { success: false, error: 'Connection error. Please try again.' },
       { status: 500 }
     );
   }

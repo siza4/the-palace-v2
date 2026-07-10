@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { requestAdmission } from "../../lib/engine/admission";
 
 
 export default function IdentityPage() {
@@ -39,18 +38,24 @@ export default function IdentityPage() {
     e.preventDefault();
 
 
-    setMessage("Processing Royal Admission...");
+    setMessage("Submitting Royal Admission request...");
 
 
 
-    const result = await requestAdmission(form);
+    const res = await fetch("/api/admission", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const result = await res.json();
 
 
 
     if(!result.success){
 
       setMessage(
-        result.error?.message || "Admission failed"
+        result.error || "Admission request failed"
       );
 
       return;
@@ -59,8 +64,9 @@ export default function IdentityPage() {
 
 
 
-    window.location.href =
-    `/identity/${result.member.id}`;
+    setMessage(
+      "Request submitted for review. You'll be notified once Authority makes a decision."
+    );
 
 
   }
