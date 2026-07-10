@@ -24,8 +24,8 @@ export default function EnterPage() {
         setMessage("");
         setLoading(false);
 
-        // Check if membership renewal needed
-        if (result.membershipStatus === 'expired') {
+        // Check if Royal Standing needs renewal
+        if (result.membershipStatus?.contributionStatus === "lapsed") {
           setTimeout(() => {
             router.push(`/payment/renew/${result.member?.id}`);
           }, 2000);
