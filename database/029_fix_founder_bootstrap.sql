@@ -9,7 +9,19 @@
 -- matching `DO $$`. It has never successfully executed against the live
 -- database in this form.
 --
--- This migration is idempotent — safe to run more than once.
+-- This migration is idempotent — safe to run more than once, including
+-- re-running after a prior attempt partially succeeded then hit a
+-- RAISE EXCEPTION partway through (e.g. Role/Standing already granted
+-- before an Office lookup failed) — every INSERT below uses
+-- ON CONFLICT DO NOTHING/DO UPDATE, so a partial prior run is safely
+-- overwritten rather than double-applied or blocked.
+--
+-- Role/Office/Standing lookups below match on trim(lower(name)) rather
+-- than an exact string, to tolerate live naming drift (extra
+-- whitespace, casing) without failing outright. If a name still isn't
+-- found after that, the exception lists every name that DOES exist in
+-- that table, so a failed run is self-diagnosing without a separate
+-- round of manual SELECTs.
 --
 -- LIVE-DATA ASSUMPTION (unverified): this assumes akachrizzney@gmail.com
 -- already exists as a row in public.members (created via the admission
@@ -34,19 +46,22 @@ BEGIN
         RAISE EXCEPTION 'No member found with email %. Confirm the founder account exists before running this migration.', founder_email;
     END IF;
 
-    SELECT id INTO authority_role_id FROM public.royal_roles WHERE name = 'Palace Authority';
+    SELECT id INTO authority_role_id FROM public.royal_roles WHERE trim(lower(name)) = trim(lower('Palace Authority'));
     IF authority_role_id IS NULL THEN
-        RAISE EXCEPTION 'Role "Palace Authority" not found in royal_roles.';
+        RAISE EXCEPTION 'Role "Palace Authority" not found in royal_roles. Roles that DO exist: %',
+            (SELECT string_agg('"' || name || '"', ', ') FROM public.royal_roles);
     END IF;
 
-    SELECT id INTO authority_office_id FROM public.offices WHERE name = 'Authority Office';
+    SELECT id INTO authority_office_id FROM public.offices WHERE trim(lower(name)) = trim(lower('Authority Office'));
     IF authority_office_id IS NULL THEN
-        RAISE EXCEPTION 'Office "Authority Office" not found in offices.';
+        RAISE EXCEPTION 'Office "Authority Office" not found in offices. Offices that DO exist: %',
+            (SELECT string_agg('"' || name || '"', ', ') FROM public.offices);
     END IF;
 
-    SELECT id INTO authority_standing_id FROM public.standing_levels WHERE name = 'Authority Standing';
+    SELECT id INTO authority_standing_id FROM public.standing_levels WHERE trim(lower(name)) = trim(lower('Authority Standing'));
     IF authority_standing_id IS NULL THEN
-        RAISE EXCEPTION 'Standing level "Authority Standing" not found in standing_levels.';
+        RAISE EXCEPTION 'Standing level "Authority Standing" not found in standing_levels. Standing levels that DO exist: %',
+            (SELECT string_agg('"' || name || '"', ', ') FROM public.standing_levels);
     END IF;
 
     -- Role: Palace Authority
