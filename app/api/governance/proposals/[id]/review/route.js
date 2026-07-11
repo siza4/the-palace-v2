@@ -4,6 +4,7 @@ import { hasPermission } from '@/lib/auth/permissions';
 
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const { member, error: authError } = await verifySession(request);
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
@@ -27,7 +28,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const review = await submitReview(params.id, member.id, recommendation, comments);
+    const review = await submitReview(id, member.id, recommendation, comments);
     return Response.json({ review }, { status: 201 });
   } catch (error) {
     console.error('Error submitting review:', error);

@@ -17,13 +17,14 @@ const supabase = createClient(
  */
 export async function GET(request, { params }) {
   try {
+    const { id } = await params;
     const { member, error: authError } = await verifySession(request);
 
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
     }
 
-    const chamberId = params.id;
+    const chamberId = id;
 
     const { data: chamber, error: chamberError } = await supabase
       .from('chambers')

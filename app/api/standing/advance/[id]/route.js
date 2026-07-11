@@ -11,6 +11,7 @@ import { hasPermission } from '@/lib/auth/permissions';
  */
 async function decide(request, { params }, approve) {
   try {
+    const { id } = await params;
     const { member: actingMember, error: authError } = await verifySession(request);
 
     if (authError || !actingMember) {
@@ -29,7 +30,7 @@ async function decide(request, { params }, approve) {
     const { decisionNotes } = body;
 
     const result = await decideStandingAdvancement(
-      params.id,
+      id,
       actingMember.id,
       approve,
       decisionNotes

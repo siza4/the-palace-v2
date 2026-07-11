@@ -4,6 +4,7 @@ import { hasPermission } from '@/lib/auth/permissions';
 
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const { member, error: authError } = await verifySession(request);
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
@@ -27,7 +28,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const record = await decideProposal(params.id, member.id, decision, decisionNotes);
+    const record = await decideProposal(id, member.id, decision, decisionNotes);
     return Response.json({ decision: record }, { status: 201 });
   } catch (error) {
     console.error('Error deciding proposal:', error);

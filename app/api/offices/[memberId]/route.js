@@ -14,7 +14,8 @@ export async function GET(request, { params }) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
     }
 
-    const targetId = params.memberId;
+    const { memberId } = await params;
+    const targetId = memberId;
 
     if (targetId !== actingMember.id) {
       const allowed = await hasPermission(actingMember.id, 'manage_offices');
@@ -36,6 +37,7 @@ export async function GET(request, { params }) {
  */
 export async function DELETE(request, { params }) {
   try {
+    const { memberId } = await params;
     const { member: actingMember, error: authError } = await verifySession(request);
 
     if (authError || !actingMember) {
@@ -57,7 +59,7 @@ export async function DELETE(request, { params }) {
       return Response.json({ error: 'officeName is required' }, { status: 400 });
     }
 
-    await revokeOffice(params.memberId, officeName, actingMember.id, reason);
+    await revokeOffice(memberId, officeName, actingMember.id, reason);
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {

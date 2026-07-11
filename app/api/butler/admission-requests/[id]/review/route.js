@@ -10,6 +10,7 @@ import { hasPermissionAndOffice } from '@/lib/auth/permissions';
  */
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const { member, error: authError } = await verifySession(request);
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
@@ -38,7 +39,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const updated = await reviewAdmissionRequest(params.id, member.id, recommendation, notes);
+    const updated = await reviewAdmissionRequest(id, member.id, recommendation, notes);
     return Response.json({ request: updated }, { status: 200 });
   } catch (error) {
     console.error('Error reviewing admission request:', error);

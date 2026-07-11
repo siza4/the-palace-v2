@@ -9,6 +9,7 @@ import { hasPermission } from '@/lib/auth/permissions';
  */
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const { member, error: authError } = await verifySession(request);
     if (authError || !member) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
@@ -32,7 +33,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const proposal = await markImplemented(params.id, member.id, documentation);
+    const proposal = await markImplemented(id, member.id, documentation);
     return Response.json({ proposal }, { status: 200 });
   } catch (error) {
     console.error('Error marking proposal implemented:', error);
