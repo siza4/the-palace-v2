@@ -12,7 +12,7 @@ export default function LivePage() {
           Live institutional activity is being prepared and will appear here.
         </p>
         <a
-          href="/enter"
+          href="/login"
           className="inline-block mt-8 bg-[#D4AF37] text-black font-bold py-3 px-6 rounded hover:bg-[#E8C547] transition"
         >
           Return to Entrance

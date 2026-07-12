@@ -18,7 +18,7 @@ export default function LoginPage() {
       options: {
         emailRedirectTo:
           typeof window !== "undefined"
-            ? `${window.location.origin}/butler`
+            ? `${window.location.origin}/throne`
             : undefined
       }
     });
@@ -40,7 +40,7 @@ export default function LoginPage() {
           THE PALACE
         </h1>
         <p className="text-center text-[#C0C0C0] mb-8">
-          Office Holder Sign In
+          Palace Sign In
         </p>
 
         {sent ? (

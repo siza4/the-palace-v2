@@ -13,7 +13,7 @@ export default function Home() {
 
         <div className="text-center">
 
-          <Link href="/enter">
+          <Link href="/login">
             <RoyalButton>
               ENTER
             </RoyalButton>

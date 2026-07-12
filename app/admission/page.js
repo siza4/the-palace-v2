@@ -61,7 +61,7 @@ export default function AdmissionPage() {
             Status: {result.status}
           </p>
           <a
-            href="/enter"
+            href="/login"
             className="block w-full mt-8 bg-[#D4AF37] text-black font-bold py-3 rounded hover:bg-[#E8C547] transition"
           >
             Return to Entrance
@@ -126,7 +126,7 @@ export default function AdmissionPage() {
 
         <p className="text-center text-[#888888] text-sm mt-8">
           Already a member?{" "}
-          <a href="/enter" className="text-[#D4AF37] hover:underline">
+          <a href="/login" className="text-[#D4AF37] hover:underline">
             Enter Palace
           </a>
         </p>
