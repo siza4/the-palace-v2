@@ -131,14 +131,20 @@ export default function AdmissionsReviewPage() {
                 </span>
               </div>
 
+              {r.applicant_notes && (
+                <p className="text-sm text-[#cccccc] mb-2 italic">
+                  "{r.applicant_notes}"
+                </p>
+              )}
+
               {r.review_notes && (
                 <p className="text-sm text-[#aaaaaa] mb-2">
                   Review notes: {r.review_notes}
                 </p>
               )}
-              {r.decision_notes && (
+              {r.decision_reason && (
                 <p className="text-sm text-[#aaaaaa] mb-2">
-                  Decision notes: {r.decision_notes}
+                  Decision notes: {r.decision_reason}
                 </p>
               )}
 

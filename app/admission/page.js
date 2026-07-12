@@ -8,6 +8,7 @@ export default function AdmissionPage() {
     email: "",
     phone: "",
     country: "",
+    notes: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -108,8 +109,16 @@ export default function AdmissionPage() {
           <input
             value={form.country}
             onChange={(e) => updateField("country", e.target.value)}
-            placeholder="Country"
+            placeholder="Country (optional)"
             className="w-full bg-black text-white border border-[#D4AF37] rounded p-3"
+            disabled={loading}
+          />
+          <textarea
+            value={form.notes}
+            onChange={(e) => updateField("notes", e.target.value)}
+            placeholder="Tell us why you'd like to join The Palace (optional)"
+            rows={3}
+            className="w-full bg-black text-white border border-[#D4AF37] rounded p-3 resize-none"
             disabled={loading}
           />
         </div>
