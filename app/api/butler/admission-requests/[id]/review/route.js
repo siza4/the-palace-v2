@@ -4,9 +4,11 @@ import { hasPermissionAndOffice } from '@/lib/auth/permissions';
 
 /**
  * Admissions Office / Butler's Office records a recommendation. Cannot
- * approve or reject membership itself — only sets the request to
- * 'recommended' or 'declined_by_admissions'. Authority's decide route
- * makes the binding decision. Separation of powers.
+ * approve or reject membership itself — moves status to 'under_review'
+ * and records the recommendation (accept/reject/request_info) in
+ * review_recommendation. Authority's decide route makes the binding
+ * decision, and may also act directly from 'submitted' without waiting
+ * for this step. Separation of powers.
  */
 export async function POST(request, { params }) {
   try {

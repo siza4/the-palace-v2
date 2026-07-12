@@ -98,6 +98,9 @@ export default function AdmissionsReviewPage() {
         <p className="text-[#888888] mb-6">
           Admissions Office / Butler's Office review, then Palace Authority decides.
           Reviewing does not approve membership — only a final decision creates a Member.
+          Authority may also decide directly on a submitted request without an
+          intermediate review, when no Admissions/Butler's Office holder is
+          available yet.
         </p>
 
         {error && (
@@ -182,7 +185,7 @@ export default function AdmissionsReviewPage() {
                   </>
                 )}
 
-                {r.status === "under_review" && (
+                {(r.status === "submitted" || r.status === "under_review") && (
                   <>
                     <button
                       onClick={() => handleDecide(r.id, "approved")}
