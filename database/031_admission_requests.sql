@@ -16,6 +16,24 @@
 -- and treasury contributions. An applicant has no session at submission
 -- time, so there's no meaningful RLS policy to scope to them anyway.
 
+-- LIVE SCHEMA RECONCILIATION NOTE (added after live schema dump review):
+-- The live admission_requests table does not exactly match the
+-- CREATE TABLE below — it was evidently created by something other than
+-- this file (the CREATE TABLE IF NOT EXISTS below is therefore a no-op
+-- against the current live database). Confirmed live differences:
+--   - status has a CHECK constraint: only 'submitted', 'under_review',
+--     'approved', 'rejected', 'withdrawn' are allowed. This file's
+--     original code comments referencing 'recommended' /
+--     'declined_by_admissions' as status values are WRONG against live
+--     and have been corrected in lib/engine/admission.js — those
+--     recommendation values now only ever go into review_recommendation,
+--     never into status.
+--   - there is also an applicant_notes column live, not created here.
+-- This CREATE TABLE is left as an accurate record of what this
+-- migration originally intended, for history — do not treat it as the
+-- current live source of truth. Treat the live schema dump as
+-- authoritative for column/constraint shape going forward.
+
 CREATE TABLE IF NOT EXISTS public.admission_requests (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     full_name text NOT NULL,

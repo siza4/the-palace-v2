@@ -176,7 +176,7 @@ export default function AdmissionsReviewPage() {
                   </>
                 )}
 
-                {(r.status === "recommended" || r.status === "declined_by_admissions") && (
+                {r.status === "under_review" && (
                   <>
                     <button
                       onClick={() => handleDecide(r.id, "approved")}
