@@ -45,11 +45,16 @@ export async function GET(request, { params }) {
     }
 
     const { data: access } = await supabase
-      .from('member_chambers')
-      .select('access_level')
+      .from('member_offices')
+      .select('offices(name)')
       .eq('member_id', member.id)
-      .eq('chamber_id', chamberId)
-      .single();
+      .eq('active', true);
+
+    const accessLevel = chamber.required_office
+      ? (access || []).some((o) => o.offices?.name === chamber.required_office)
+        ? chamber.required_office
+        : null
+      : 'Member';
 
     const { data: posts } = await supabase
       .from('chamber_posts')
@@ -58,7 +63,7 @@ export async function GET(request, { params }) {
       .order('created_at', { ascending: false });
 
     return Response.json(
-      { chamber, accessLevel: access?.access_level, posts: posts || [] },
+      { chamber, accessLevel, posts: posts || [] },
       { status: 200 }
     );
   } catch (error) {
