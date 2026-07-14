@@ -17,11 +17,19 @@ export async function POST(request, { params }) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
     }
 
+    // TEMPORARY DEBUG LOGGING — remove once the permission-check
+    // mismatch is diagnosed. Do not leave this in production.
+    console.log("[DEBUG decide] Authenticated member:", member);
+    console.log("[DEBUG decide] Permission being checked:", "decide_admission_request");
+    console.log("[DEBUG decide] Office list:", ["Authority Office"]);
+
     const allowed = await hasPermissionAndOffice(
       member.id,
       'decide_admission_request',
       ['Authority Office']
     );
+
+    console.log("[DEBUG decide] Permission result:", allowed);
 
     if (!allowed) {
       return Response.json(
