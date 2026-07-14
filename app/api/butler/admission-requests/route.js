@@ -4,9 +4,15 @@ import { hasPermissionAndOffice } from '@/lib/auth/permissions';
 
 /**
  * List admission requests for the Butler review queue. Requires
- * review_admission_request AND holding Admissions Office or Butler's
- * Office — permission alone is not enough (Charter: Permission AND
- * Office for institutional review functions).
+ * review_admission_request OR decide_admission_request, held together
+ * with one of Admissions Office / Butler's Office / Authority Office.
+ * Authority Office is included here (unlike the review action itself)
+ * because Authority can decide directly on a submitted request without
+ * an intermediate review — see docs/ADMISSION_WORKFLOW.md's
+ * bootstrapping exception. Confirmed via live debug logging: the
+ * founder held review_admission_request + Authority Office correctly,
+ * but this route previously excluded Authority Office from the allowed
+ * list, so Authority could never even see the queue to act on it.
  */
 export async function GET(request) {
   try {
@@ -15,15 +21,20 @@ export async function GET(request) {
       return Response.json({ error: authError || 'Not authenticated' }, { status: 401 });
     }
 
-    const allowed = await hasPermissionAndOffice(
+    const canReview = await hasPermissionAndOffice(
       member.id,
       'review_admission_request',
-      ['Admissions Office', "Butler's Office"]
+      ['Admissions Office', "Butler's Office", 'Authority Office']
+    );
+    const canDecide = !canReview && await hasPermissionAndOffice(
+      member.id,
+      'decide_admission_request',
+      ['Authority Office']
     );
 
-    if (!allowed) {
+    if (!canReview && !canDecide) {
       return Response.json(
-        { error: 'You do not hold review_admission_request together with Admissions Office or Butler\'s Office' },
+        { error: 'You do not hold review_admission_request or decide_admission_request together with the required Office' },
         { status: 403 }
       );
     }
